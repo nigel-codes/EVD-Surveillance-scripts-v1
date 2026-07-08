@@ -1,61 +1,73 @@
 # evd_surveillance_scripts
 
-## Getting started
+A [Dagster](https://docs.dagster.io/) + [dlt](https://dlthub.com/docs) data platform for EVD surveillance data sources. Each data source lives in its own self-contained folder under `src/datasources/defs/` and is **discovered automatically** — adding a new source never requires touching shared code.
 
-### Installing dependencies
-
-**Option 1: uv**
-
-Ensure [`uv`](https://docs.astral.sh/uv/) is installed following their [official documentation](https://docs.astral.sh/uv/getting-started/installation/).
-
-Create a virtual environment, and install the required dependencies using _sync_:
-
-```bash
-uv sync
+```
+src/datasources/
+├── definitions.py              # autoloads everything under defs/ — never edit
+└── defs/
+    └── mdharura/               # one folder per data source
+        ├── defs.yaml           # wires the dlt pipeline into Dagster
+        └── loader.py           # the dlt source (API calls) + pipeline (destination)
 ```
 
-Then, activate the virtual environment:
+## Quickstart
 
-| OS | Command |
+Requires [uv](https://docs.astral.sh/uv/getting-started/installation/) and Python ≥ 3.10.
+
+```bash
+git clone <this-repo> && cd evd-surveillance-scripts
+uv sync                        # creates .venv and installs everything
+source .venv/bin/activate      # optional — `uv run <cmd>` works without it
+```
+
+Configure the MinIO destination (see [docs/pipelines-and-destinations.md](docs/pipelines-and-destinations.md)):
+
+```bash
+# .dlt/secrets.toml  (gitignored — never commit)
+[destination.filesystem.credentials]
+aws_access_key_id = "..."                 # your MinIO access key
+aws_secret_access_key = "..."
+endpoint_url = "http://localhost:9000"    # your MinIO server
+```
+
+Run it:
+
+```bash
+dg dev                                       # Dagster UI at http://localhost:3000
+dg list defs                                 # or: list all assets in the terminal
+dg launch --assets "mdharura/signals"          # or: run one asset headless
+```
+
+## Adding your own data source
+
+```bash
+dg scaffold defs datasources.components.DltLoadSourceCollection my_source
+```
+
+This creates `defs/my_source/` with a `loader.py` and a `defs.yaml` pre-filled with the repo conventions. Edit `loader.py` to fetch from your API, then verify:
+
+```bash
+dg check defs                                # validates everything loads
+dg launch --assets "my_source/<resource>"    # test-run it
+```
+
+Full walkthrough: [docs/adding-a-source.md](docs/adding-a-source.md). Use [`defs/mdharura/`](src/datasources/defs/mdharura/) as a working reference — it incrementally pulls EBS signals from the [m-Dharura API](https://api.m-dharura.health.go.ke/swaggerui/) and loads to MinIO (S3-compatible object storage).
+
+## Documentation
+
+| Doc | Covers |
 | --- | --- |
-| MacOS | ```source .venv/bin/activate``` |
-| Windows | ```.venv\Scripts\activate``` |
-
-**Option 2: pip**
-
-Install the python dependencies with [pip](https://pypi.org/project/pip/):
-
-```bash
-python3 -m venv .venv
-```
-
-Then activate the virtual environment:
-
-| OS | Command |
-| --- | --- |
-| MacOS | ```source .venv/bin/activate``` |
-| Windows | ```.venv\Scripts\activate``` |
-
-Install the required dependencies:
-
-```bash
-pip install -e ".[dev]"
-```
-
-### Running Dagster
-
-Start the Dagster UI web server:
-
-```bash
-dg dev
-```
-
-Open http://localhost:3000 in your browser to see the project.
+| [docs/developer-walkthrough.md](docs/developer-walkthrough.md) | Full tutorial: dev setup, MinIO, running Dagster, building a resource from scratch |
+| [docs/adding-a-source.md](docs/adding-a-source.md) | Quick reference for adding a new data source |
+| [docs/contributing.md](docs/contributing.md) | Fork → feature branch → PR into `dev` workflow |
+| [docs/resources.md](docs/resources.md) | Defining dlt resources: REST APIs, pagination, transformations, incremental loading |
+| [docs/pipelines-and-destinations.md](docs/pipelines-and-destinations.md) | Pipelines, the MinIO destination, configuration and secrets |
+| [docs/dagster.md](docs/dagster.md) | How Dagster discovers sources, asset keys, schedules, useful `dg` commands |
+| [docs/deployment.md](docs/deployment.md) | Docker Compose deployment: architecture, operations, troubleshooting |
 
 ## Learn more
 
-To learn more about this template and Dagster in general:
-
-- [Dagster Documentation](https://docs.dagster.io/)
-- [Dagster University](https://courses.dagster.io/)
-- [Dagster Slack Community](https://dagster.io/slack)
+- [dlt documentation](https://dlthub.com/docs) — the extract/load framework
+- [Dagster documentation](https://docs.dagster.io/) — orchestration
+- [dagster-dlt integration](https://docs.dagster.io/integrations/libraries/dlt) — how the two connect

@@ -1,0 +1,42 @@
+# Dagster deployment: ONE image, TWO containers (webserver + daemon) sharing
+# SQLite storage via the dagster_data volume — no Postgres, no gRPC code
+# server, no per-run containers (DefaultRunLauncher). Config (dagster.yaml,
+# workspace.yaml) is baked into the image; only data lives in the volume.
+#
+# MinIO is expected to run separately; point MINIO_ENDPOINT_URL at it
+# (defaults to the host's MinIO at :9000). Copy .env.example to .env to
+# override any of the defaults below.
+
+services:
+  webserver:
+    build: .
+    image: evd-dagster
+    command: ["dagster-webserver", "-h", "0.0.0.0", "-p", "3000", "-w", "workspace.yaml"]
+    ports:
+      - "${DAGSTER_WEB_PORT:-3000}:3000"
+    environment: &dlt-env
+      DESTINATION__FILESYSTEM__BUCKET_URL: ${BUCKET_URL:-s3://evd/}
+      DESTINATION__FILESYSTEM__CREDENTIALS__AWS_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY:-minioadmin}
+      DESTINATION__FILESYSTEM__CREDENTIALS__AWS_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      DESTINATION__FILESYSTEM__CREDENTIALS__ENDPOINT_URL: ${MINIO_ENDPOINT_URL:-http://host.docker.internal:9000}
+    volumes:
+      - dagster_data:/opt/dagster/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # Dequeues and executes runs, and fires schedules/sensors. Runs execute as
+  # subprocesses of this container — size its resources for the heaviest run.
+  daemon:
+    image: evd-dagster
+    build: .
+    command: ["dagster-daemon", "run", "-w", "workspace.yaml"]
+    environment: *dlt-env
+    volumes:
+      - dagster_data:/opt/dagster/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  dagster_data:

@@ -1,0 +1,7 @@
+# Loaded by both dagster-webserver and dagster-daemon (-w workspace.yaml).
+# The project is installed in the image, so the code location loads in-process —
+# no separate gRPC server container needed.
+load_from:
+  - python_module:
+      module_name: datasources.definitions
+      location_name: datasources

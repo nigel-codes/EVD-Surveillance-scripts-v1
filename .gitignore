@@ -201,3 +201,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# dlt / duckdb local artifacts
+*.duckdb
+*.duckdb.wal
+.dlt/secrets.toml
+
+.tmp_*

@@ -1,0 +1,36 @@
+# Dagster instance config, baked into the image at $DAGSTER_HOME/dagster.yaml.
+#
+# Runs, event logs, and schedule state are SQLite files under /opt/dagster/data
+# — a volume shared by the webserver and daemon containers (kept separate from
+# $DAGSTER_HOME so the volume never shadows this config file). Fine at this
+# scale (one schedule, occasional manual runs); move to Postgres storage if
+# run volume grows and "database is locked" errors appear.
+#
+# Run launcher is the default (DefaultRunLauncher): runs execute as
+# subprocesses of the container that launches them — no per-run containers.
+
+storage:
+  sqlite:
+    base_dir: /opt/dagster/data/storage
+
+local_artifact_storage:
+  module: dagster.core.storage.root
+  class: LocalArtifactStorage
+  config:
+    base_dir: /opt/dagster/data/artifacts
+
+# Queue runs so the daemon launches them (keeps the webserver responsive and
+# caps how many API-hammering runs execute at once).
+run_coordinator:
+  module: dagster.core.run_coordinator
+  class: QueuedRunCoordinator
+  config:
+    max_concurrent_runs: 4
+
+run_monitoring:
+  enabled: true
+  # generous ceiling: full m-Dharura backfills paginate the whole history
+  max_runtime_seconds: 14400
+
+telemetry:
+  enabled: false
