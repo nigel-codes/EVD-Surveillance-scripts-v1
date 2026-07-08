@@ -13,3 +13,18 @@ sync_mdharura_signals_daily = dg.build_schedule_from_partitioned_job(
     name="sync_mdharura_signals_daily",
     description="Syncs the previous day's signals from m-Dharura every day at 06:00 UTC",
 )
+
+lims_sync_job = dg.define_asset_job(
+    name="lims_sync_job",
+    selection=dg.AssetSelection.groups("lims"),
+    description="Loads LIMS signals for one partition (day) into MinIO",
+)
+
+# daily-partitioned job -> schedule fires at 03:00 UTC for the previous day
+sync_lims_signals_daily = dg.build_schedule_from_partitioned_job(
+    lims_sync_job,
+    hour_of_day=3,
+    name="sync_lims_signals_daily",
+    description="Syncs the previous day's signals from LIMS every day at 03:00 UTC",
+)
+    
