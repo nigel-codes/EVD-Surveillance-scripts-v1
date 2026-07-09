@@ -20,7 +20,7 @@ client = RESTClient(
 
 # only these EBS signal codes are loaded; the API has no signal query param,
 # so records are filtered as they stream through the generator
-SIGNALS_OF_INTEREST = {"7", "8"}
+SIGNALS_OF_INTEREST = {"7", "8", "H4"}
 
 
 def map_task(task: dict) -> dict:
@@ -28,13 +28,23 @@ def map_task(task: dict) -> dict:
     unit = task.get("unit") or {}
     subcounty = unit.get("parent") or {}
     county = subcounty.get("parent") or {}
+    form = task.get("cebs") or task.get("hebs") or {}
+    verification_form = form.get("verificationForm") or {}
+    investigation_form = form.get("investigationForm") or {}
+    threat_still_exists = verification_form.get("isThreatStillExisting")
 
     return {
         "id": task.get("_id"),
         "signal": task.get("signal"),
-        "community_unit": unit.get("name"),
+        "unit_name": unit.get("name"),
+        "unit_type": unit.get("type"),
         "subcounty": subcounty.get("name"),
         "county": county.get("name"),
+        "signal_verified": bool(verification_form),
+        "signal_verified_true": bool(threat_still_exists),
+        "signal_verification_date": verification_form.get("createdAt"),
+        "signal_investigated": bool(investigation_form),
+        "signal_investigation_date": investigation_form.get("createdAt"),
         "created_at": task.get("createdAt"),
     }
 
