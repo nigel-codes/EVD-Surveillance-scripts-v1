@@ -29,7 +29,9 @@ PROJECTION = {
   "classification": "traveller_symptoms_ebola_classification_of_traveller",
   "screened": "Yes",
   "point_of_entry": "point_of_entry",
-  "created_timestamp": "created_timestamp"
+  "created_timestamp": "created_timestamp",
+  "latitude": "location.latitude",
+  "latitude": "location.longitude"
 }
 
 @dlt.source(name="adam")

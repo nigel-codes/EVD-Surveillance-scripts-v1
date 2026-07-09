@@ -1,6 +1,6 @@
 """Load case investigation data from ADaM API into MinIO.
 
-ADaM is the tool used for case investigation.
+ADaM is the tool used for case investigation, contact listing and tracing.
 
 The cases resource is windowed on created_timestamp: each Dagster partition run
 loads one day (timestamp_start/timestamp_end), so history backfills are ordinary Dagster
@@ -34,15 +34,16 @@ PROJECTION = {
   "initial_classification": "type_of_record",
   "outcome": "clinical_care_outcome_of_case",
   "samples_collected": "laboratory_sample_collected",
+  "specimen_id": "laboratory_specimen_id",
   "final_laboratory_results": "laboratory_final_laboratory_result",
   "reporting_county": "reporting_county",
   "reporting_subcounty": "reporting_subcounty",
   "health_facility": "case_demographics_health_facility",
   "date_of_investigation": "date_of_investigation",
-  "created_timestamp": "created_timestamp"
+  "created_timestamp": "created_timestamp",
+  "latitude": "location.latitude",
+  "latitude": "location.longitude"
 }
-
-
 
 @dlt.source(name="adam")
 def adam_source():
