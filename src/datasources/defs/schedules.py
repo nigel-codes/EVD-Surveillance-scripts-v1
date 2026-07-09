@@ -34,7 +34,7 @@ krcs_evd_screening_sync_job = dg.define_asset_job(
     description="Loads PoE health screenings for one partition (day) into MinIO",
 )
 
-# 07:00 keeps the three sources off each other's toes: lims 03:00, mdharura 06:00
+# daily-partitioned job -> schedule fires at 07:00 UTC for the previous day
 sync_krcs_evd_screening_screenings_daily = dg.build_schedule_from_partitioned_job(
     krcs_evd_screening_sync_job,
     hour_of_day=7,
