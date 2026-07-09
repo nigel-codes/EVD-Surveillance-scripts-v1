@@ -81,3 +81,16 @@ sync_krcs_evd_screening_screenings_daily = dg.build_schedule_from_partitioned_jo
     name="sync_krcs_evd_screening_screenings_daily",
     description="Syncs the previous day's PoE health screenings every day at 07:00 UTC",
 )
+
+echis_sync_job = dg.define_asset_job(
+    name="echis_sync_job",
+    selection=dg.AssetSelection.groups("echis"),
+    description="Loads echis results for one partition (day) into MinIO",
+)
+
+sync_echis_results_daily = dg.ScheduleDefinition(
+    job=echis_sync_job,
+    cron_schedule="0 1 * * *",
+    name="sync_echis_results_daily",
+    description="Syncs results from echis every day at 01:00 UTC",
+)
