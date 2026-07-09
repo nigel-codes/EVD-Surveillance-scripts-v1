@@ -41,3 +41,29 @@ sync_lims_results_daily = dg.ScheduleDefinition(
     name="sync_lims_results_daily",
     description="Syncs results from LIMS every day at 03:00 UTC",
 )
+
+cbs_sync_job = dg.define_asset_job(
+    name="cbs_sync_job",
+    selection=dg.AssetSelection.groups("cbs"),
+    description="Loads CBS reports and screenings for one partition (day) into MinIO",
+)
+
+# daily-partitioned job -> schedule fires at 06:00 UTC for the previous day
+sync_cbs_daily = dg.build_schedule_from_partitioned_job(
+    cbs_sync_job,
+    hour_of_day=6,
+    name="sync_cbs_daily",
+    description="Syncs the previous day's CBS reports and screenings every day at 06:00 UTC",
+krcs_evd_screening_sync_job = dg.define_asset_job(
+    name="krcs_evd_screening_sync_job",
+    selection=dg.AssetSelection.groups("krcs_evd_screening"),
+    description="Loads PoE health screenings for one partition (day) into MinIO",
+)
+
+# daily-partitioned job -> schedule fires at 07:00 UTC for the previous day
+sync_krcs_evd_screening_screenings_daily = dg.build_schedule_from_partitioned_job(
+    krcs_evd_screening_sync_job,
+    hour_of_day=7,
+    name="sync_krcs_evd_screening_screenings_daily",
+    description="Syncs the previous day's PoE health screenings every day at 07:00 UTC",
+)
