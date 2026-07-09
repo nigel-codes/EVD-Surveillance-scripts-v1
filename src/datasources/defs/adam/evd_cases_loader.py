@@ -55,7 +55,7 @@ def adam_source():
         body = {
             "limit": 250,
             "tool_id": TOOL_ID,
-            "complete": True,
+            "complete": "true",
             "format": "tabular",
             "projection": PROJECTION,
         }
