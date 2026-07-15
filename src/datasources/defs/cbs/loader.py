@@ -122,4 +122,5 @@ pipeline = dlt.pipeline(
     pipeline_name="cbs",
     destination="filesystem",
     dataset_name="cbs_raw",
+    progress=dlt.progress.tqdm(colour="yellow"),
 )

@@ -54,4 +54,5 @@ pipeline = dlt.pipeline(
     pipeline_name="krcs_evd_screening",
     destination="filesystem",
     dataset_name="krcs_evd_screening_raw",
+    progress=dlt.progress.tqdm(colour="yellow"),
 )
