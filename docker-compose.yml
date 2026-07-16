@@ -22,6 +22,7 @@ services:
       # per-source API tokens: containers have no .dlt/secrets.toml (.dockerignore)
       DATASOURCES__LIMS__API_TOKEN: ${LIMS_API_TOKEN:-}
       DATASOURCES__UHAI__API_KEY: ${UHAI_API_KEY:?set UHAI_API_KEY in .env}
+      UHAI_API_HOST_URL: ${UHAI_API_HOST_URL:-https://chat.nphl.go.ke}
       DATASOURCES__CBS__API_KEY: ${CBS_API_KEY:-}
       DATASOURCES__KRCS_EVD_SCREENING__BASE_URL: ${KRCS_EVD_SCREENING_BASE_URL:-}
       DATASOURCES__KRCS_EVD_SCREENING__API_KEY: ${KRCS_EVD_SCREENING_API_KEY:-}

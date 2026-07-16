@@ -8,6 +8,7 @@ limit/offset so the source service is not asked for a large response at once.
 from collections.abc import Iterator
 from datetime import datetime, timezone
 import json
+import os
 from typing import Any
 from urllib.error import HTTPError
 from urllib.parse import urlencode
@@ -15,7 +16,8 @@ from urllib.request import Request, urlopen
 
 import dlt
 
-API_BASE_URL = "https://chat.nphl.go.ke/api/v1/surveillance/ebola-cases"
+API_HOST_URL = os.getenv("UHAI_API_HOST_URL", "https://chat.nphl.go.ke").rstrip("/")
+API_BASE_URL = f"{API_HOST_URL}/api/v1/surveillance/ebola-cases"
 PAGE_LIMIT = 100
 
 
