@@ -1,9 +1,0 @@
-type: datasources.components.DltLoadSourceCollection
-
-attributes:
-  loads:
-    - source: .loader.source
-      pipeline: .loader.pipeline
-      translation:
-        key: passive_surveillance_flags/{{ resource.name }}
-        group_name: passive_surveillance_flags
