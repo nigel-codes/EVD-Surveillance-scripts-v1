@@ -14,23 +14,39 @@ from dlt.sources.helpers.rest_client import RESTClient
 from dlt.sources.helpers.rest_client.auth import OAuth2ClientCredentials
 from dlt.sources.helpers.rest_client.paginators import PageNumberPaginator
 
-BASE_URL = "https://dmistaging.kenyahmis.org/api/"
-TOKEN_URL = "https://keycloak.kenyahmis.org/realms/dmi/protocol/openid-connect/token"
-
 # earliest data to load; the partition start_date in defs.yaml must match
 INITIAL_VALUE = "2025-01-01T00:00:00.000Z"
 
 
 def _client() -> RESTClient:
     """Build a RESTClient at run time so `dg check defs` (import only) never
-    needs credentials."""
-    secrets = dlt.secrets["datasources.taifa_care_kenyaemr"]
+    needs config or credentials."""
+    base_url = dlt.secrets["datasources.taifa_care_kenyaemr.base_url"]
+    token_url = dlt.secrets["datasources.taifa_care_kenyaemr.token_url"]
+    client_id = dlt.secrets["datasources.taifa_care_kenyaemr.client_id"]
+    client_secret = dlt.secrets["datasources.taifa_care_kenyaemr.client_secret"]
+
+    missing = [
+        n
+        for n, v in (
+            ("base_url", base_url),
+            ("token_url", token_url),
+            ("client_id", client_id),
+            ("client_secret", client_secret),
+        )
+        if not v
+    ]
+    if missing:
+        raise ValueError(
+            f"datasources.taifa_care_kenyaemr: missing or empty {', '.join(missing)}"
+        )
+
     return RESTClient(
-        base_url=BASE_URL,
+        base_url=base_url,
         auth=OAuth2ClientCredentials(
-            access_token_url=TOKEN_URL,
-            client_id=secrets["client_id"],
-            client_secret=secrets["client_secret"],
+            access_token_url=token_url,
+            client_id=client_id,
+            client_secret=client_secret,
         ),
         paginator=PageNumberPaginator(base_page=0, total_path="data.totalPages"),
     )
@@ -40,7 +56,7 @@ def map_case(c: dict) -> dict:
     """Reshape a case to the flat subset loaded from this source."""
     subject = c.get("subject") or {}
     return {
-        # id is the primary key; created_at is the incremental cursor — the
+        # id is the primary key; created_at is the incremental cursor. The
         # resource fails without both
         "id": c.get("caseUniqueId"),
         "patient_id": subject.get("patientUniqueId"),
