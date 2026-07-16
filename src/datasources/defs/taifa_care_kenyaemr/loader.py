@@ -1,6 +1,6 @@
 """Load passively-flagged surveillance cases from Taifa Care (KenyaEMR) into MinIO.
 
-The DMI (Disease Management Information) system on the KenyaHMIS platform
+The DMI system on the KenyaHMIS platform
 exposes cases that KenyaEMR has flagged against notifiable/priority conditions,
 windowed on created_at (startDate/endDate) so each partition run loads one day.
 
