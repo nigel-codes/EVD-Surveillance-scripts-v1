@@ -1,0 +1,15 @@
+type: datasources.components.DltLoadSourceCollection
+
+attributes:
+  loads:
+    - source: .loader.source
+      pipeline: .loader.pipeline
+      partitions_def:
+        type: daily
+        start_date: "2025-01-01"   # data before 2025 is not loaded
+        end_date: "2026-07-20"     # exclusive: last partition key is 2026-07-19
+      backfill_policy:
+        type: single_run           # a backfill range = one windowed run
+      translation:
+        key: "taifa_care_kenyaemr/{{ resource.name }}"
+        group_name: taifa_care_kenyaemr
